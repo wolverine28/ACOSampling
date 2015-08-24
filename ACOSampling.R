@@ -15,6 +15,37 @@ AUC <- function(x){
   
   return((1+(1-FPR))*TPR/2+(1-FPR)*(1-TPR)/2)
 }
+STRPart <- function(dt, r, p){  
+  dt <- as.data.frame(dt)
+  dt[,r] <- as.factor(dt[,r]) 
+  n.class <- length(levels(dt[,r])) 
+  dt.lst <- vector("list",n.class) 
+  ndt.lst <- vector("list",n.class) 
+  dt.trn.lst <-vector("list",n.class)  
+  dt.tst.lst <- vector("list",n.class)  
+  
+  i <- 1     
+  while(i <= n.class){   
+    dt.lst[[i]] <- dt[dt[,r]==levels(dt[,r])[i],] 
+    ndt.lst[[i]] <- nrow(dt.lst[[i]])             
+    dt.lst[[i]] <- dt.lst[[i]][sample(ndt.lst[[i]]),]  
+    dt.trn.lst[[i]] <- dt.lst[[i]][1:round(ndt.lst[[i]]*p),] 
+    dt.tst.lst[[i]] <- dt.lst[[i]][(round(ndt.lst[[i]]*p)+1):ndt.lst[[i]],]    
+    i <- i+1 
+  }    
+  j <- 2 
+  d.train <- dt.trn.lst[[1]] 
+  d.test <- dt.tst.lst[[1]]     
+  while(j <= n.class){ 
+    b <- dt.trn.lst[[j]]    
+    d.train <- rbind(d.train,b)  
+    c <- dt.tst.lst[[j]]     
+    d.test <- rbind(d.test,c)
+    j <- j+1                 
+  }  
+  return(list(d.train,d.test)) 
+}
+##
 ACO <- function(training,testing,ITA=50,ant_n=50,rho=0.8){
   
   # sigma <- 5 #RBF kernal parameter
@@ -58,36 +89,7 @@ ACO <- function(training,testing,ITA=50,ant_n=50,rho=0.8){
   output$sel <- result_sel
   return(output)
 }
-STRPart <- function(dt, r, p){  
-  dt <- as.data.frame(dt)
-  dt[,r] <- as.factor(dt[,r]) 
-  n.class <- length(levels(dt[,r])) 
-  dt.lst <- vector("list",n.class) 
-  ndt.lst <- vector("list",n.class) 
-  dt.trn.lst <-vector("list",n.class)  
-  dt.tst.lst <- vector("list",n.class)  
-  
-  i <- 1     
-  while(i <= n.class){   
-    dt.lst[[i]] <- dt[dt[,r]==levels(dt[,r])[i],] 
-    ndt.lst[[i]] <- nrow(dt.lst[[i]])             
-    dt.lst[[i]] <- dt.lst[[i]][sample(ndt.lst[[i]]),]  
-    dt.trn.lst[[i]] <- dt.lst[[i]][1:round(ndt.lst[[i]]*p),] 
-    dt.tst.lst[[i]] <- dt.lst[[i]][(round(ndt.lst[[i]]*p)+1):ndt.lst[[i]],]    
-    i <- i+1 
-  }    
-  j <- 2 
-  d.train <- dt.trn.lst[[1]] 
-  d.test <- dt.tst.lst[[1]]     
-  while(j <= n.class){ 
-    b <- dt.trn.lst[[j]]    
-    d.train <- rbind(d.train,b)  
-    c <- dt.tst.lst[[j]]     
-    d.test <- rbind(d.test,c)
-    j <- j+1                 
-  }  
-  return(list(d.train,d.test)) 
-}
+####
 
 data <- read.csv("dataset3.csv",h=T)
 plot(data[,-3])
@@ -96,9 +98,6 @@ points(data[data[,3]==1,-3],col=2)
 part <- STRPart(data,3,0.66)
 training <- part[[1]]
 test <- part[[2]]
-
-
-
 
 
 maj <- training[training[,3]==0,]
