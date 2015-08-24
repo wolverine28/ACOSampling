@@ -45,7 +45,7 @@ STRPart <- function(dt, r, p){
   }  
   return(list(d.train,d.test)) 
 }
-##
+####
 ACO <- function(training,testing,ITA=50,ant_n=50,rho=0.8){
   
   # sigma <- 5 #RBF kernal parameter
